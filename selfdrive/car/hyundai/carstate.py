@@ -274,7 +274,6 @@ class CarState(CarStateBase):
       ("CF_VSM_Stat", "SCC12", 0),
       ("CF_VSM_BeltCmd", "SCC12", 0),
       ("ACCFailInfo", "SCC12", 0),
-      ("ACCMode", "SCC12", 0),
       ("StopReq", "SCC12", 0),
       ("CR_VSM_DecCmd", "SCC12", 0),
       ("aReqRaw", "SCC12", 0), #aReqMax
@@ -473,7 +472,6 @@ class CarState(CarStateBase):
         ("CF_VSM_Stat", "SCC12", 0),
         ("CF_VSM_BeltCmd", "SCC12", 0),
         ("ACCFailInfo", "SCC12", 0),
-        ("ACCMode", "SCC12", 0),
         ("StopReq", "SCC12", 0),
         ("CR_VSM_DecCmd", "SCC12", 0),
         ("aReqRaw", "SCC12", 0), #aReqMax
@@ -555,7 +553,6 @@ class CarState(CarStateBase):
         ("CF_VSM_Stat", "SCC12", 0),
         ("CF_VSM_BeltCmd", "SCC12", 0),
         ("ACCFailInfo", "SCC12", 0),
-        ("ACCMode", "SCC12", 0),
         ("StopReq", "SCC12", 0),
         ("CR_VSM_DecCmd", "SCC12", 0),
         ("aReqRaw", "SCC12", 0), #aReqMax
