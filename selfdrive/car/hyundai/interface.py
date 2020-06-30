@@ -13,6 +13,8 @@ ButtonType = car.CarState.ButtonEvent.Type
 class CarInterface(CarInterfaceBase):
   def __init__(self, CP, CarController, CarState):
     super().__init__(CP, CarController, CarState)
+    self.buttonEvents = []
+    self.countenable = 0
     self.cp2 = self.CS.get_can2_parser(CP)
     self.lkas_button_alert = False
 
@@ -261,14 +263,17 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp2, self.cp_cam)
     ret.canValid = self.cp.can_valid and self.cp2.can_valid and self.cp_cam.can_valid
 
-    if self.CP.enableCruise and not self.CC.scc_live:
-      self.CP.enableCruise = False
-    elif self.CC.scc_live and not self.CP.enableCruise:
-      self.CP.enableCruise = True
+#    if self.CP.enableCruise and not self.CC.scc_live:
+#      self.CP.enableCruise = False
+#    elif self.CC.scc_live and not self.CP.enableCruise:
+#      self.CP.enableCruise = True
+
+    self.CP.enableCruise = False
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
-    if not self.CP.openpilotLongitudinalControl:
-      ret.cruiseState.enabled = ret.cruiseState.available
+#    if not self.CP.openpilotLongitudinalControl:
+#      ret.cruiseState.enabled = ret.cruiseState.available
+    ret.cruiseState.enabled = ret.cruiseState.available
     # some Optima only has blinker flash signal
     if self.CP.carFingerprint == CAR.KIA_OPTIMA:
       ret.leftBlinker = bool(self.CS.left_blinker_flash or self.CS.prev_left_blinker and self.CC.turning_signal_timer)
@@ -295,7 +300,7 @@ class CarInterface(CarInterfaceBase):
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
       be = car.CarState.ButtonEvent.new_message()
       be.pressed = self.CS.cruise_buttons != 0 
-      but = self.CS.cruise_buttons if be.pressed else self.CS.prev_cruise_buttons
+      but = self.CS.cruise_buttons
       if but == Buttons.RES_ACCEL:
         be.type = ButtonType.accelCruise
       elif but == Buttons.SET_DECEL:
@@ -307,12 +312,16 @@ class CarInterface(CarInterfaceBase):
       else:
         be.type = ButtonType.unknown
       buttonEvents.append(be)
+      self.buttonEvents = buttonEvents
+
     if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
       be = car.CarState.ButtonEvent.new_message()
       be.type = ButtonType.altButton3
       be.pressed = bool(self.CS.cruise_main_button)
       buttonEvents.append(be)
-    ret.buttonEvents = buttonEvents
+      self.buttonEvents = buttonEvents
+
+    ret.buttonEvents = self.buttonEvents
 
     events = self.create_common_events(ret)
 
@@ -330,10 +339,11 @@ class CarInterface(CarInterfaceBase):
       events.events.remove(EventName.pedalPressed)
 
     # handle button presses
-    if self.CC.longcontrol and not self.CC.scc_live:
-      for b in ret.buttonEvents:
+    #if self.CC.longcontrol and not self.CC.scc_live:
+    if not self.CP.enableCruise:
+      for b in self.buttonEvents:
         # do enable on both accel and decel buttons
-        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and not b.pressed:
+        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable:
           events.add(EventName.buttonEnable)
         # do disable on button down
         if b.type == ButtonType.cancel and b.pressed:

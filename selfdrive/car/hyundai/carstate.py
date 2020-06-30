@@ -22,6 +22,10 @@ class CarState(CarStateBase):
     self.has_scc13 = CP.carFingerprint in FEATURES["has_scc13"]
     self.has_scc14 = CP.carFingerprint in FEATURES["has_scc14"]
     self.cruise_main_button = 0
+    self.cruiseStateavailable = 0
+    self.prev_cruiseStateavailable = 0
+    self.cruise_buttons = 0
+    self.prev_cruise_buttons = 0
     self.mdps_error_cnt = 0
     self.spas_enabled = CP.spasEnabled
 
@@ -63,21 +67,38 @@ class CarState(CarStateBase):
     self.mdps_error_cnt += 1 if cp_mdps.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0 else -self.mdps_error_cnt
     ret.steerWarning = self.mdps_error_cnt > 100 #cp_mdps.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0
 
+    self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
+    self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
+
     # cruise state
-    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
-                                      cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
-    ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) if not self.no_radar else \
-                                      cp.vl['EMS16']['CRUISE_LAMP_M'] != 0
+#    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
+#                                      cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
+#    ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) if not self.no_radar else \
+#                                       cp.vl['EMS16']['CRUISE_LAMP_M'] != 0
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4. if not self.no_radar else False
+
+    self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
+
+    if self.cruiseStateavailable:
+      if (self.cruise_buttons > 0) and ((self.prev_cruise_buttons == 1) or (self.prev_cruise_buttons == 2)):
+        self.cruiseStateavailable = self.cruiseStateavailable
+      elif self.cruise_buttons == 4:
+        self.cruiseStateavailable = 0
+      elif not self.prev_cruiseStateavailable:
+        self.cruiseStateavailable = 0
+
+    ret.cruiseState.available = (self.cruiseStateavailable != 0)
+
+    self.prev_cruiseStateavailable = self.cruiseStateavailable
+
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
+
     if ret.cruiseState.enabled:
       speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
       ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
                                          cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
     else:
       ret.cruiseState.speed = 0
-    self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
-    self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
 
     # TODO: Find brake pressure
     ret.brake = 0
