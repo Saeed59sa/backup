@@ -798,6 +798,7 @@ struct PathPlan {
   desire @17 :Desire;
   laneChangeState @18 :LaneChangeState;
   laneChangeDirection @19 :LaneChangeDirection;
+  laneChangeBlocked @20 :LaneChangeBlocked;
 
   enum Desire {
     none @0;
@@ -818,6 +819,11 @@ struct PathPlan {
 
   enum LaneChangeDirection {
     none @0;
+    left @1;
+    right @2;
+  }
+  enum LaneChangeBlocked {
+    off @0;
     left @1;
     right @2;
   }
@@ -855,6 +861,9 @@ struct LiveLocationKalman {
   gpsTimeOfWeek @14 :Float64;
   status @15 :Status;
   unixTimestampMillis @16 :Int64;
+  inputsOK @17 :Bool = true;
+  posenetOK @18 :Bool = true;
+  gpsOK @19 :Bool = true;
 
   enum Status {
     uninitialized @0;

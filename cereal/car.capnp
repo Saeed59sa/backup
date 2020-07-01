@@ -97,6 +97,21 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     relayMalfunction @72;
     gasPressed @73;
     stockFcw @74;
+    startup @75;
+    startupNoCar @76;
+    startupNoControl @77;
+    startupMaster @78;
+    fcw @79;
+    steerSaturated @80;
+    whitePandaUnsupported @81;
+    startupWhitePanda @82;
+    canErrorPersistent @83;
+    belowEngageSpeed @84;
+    preventLaneChange @85;
+    leftBlindspot @86;
+    rightBlindspot @87;
+    turningIndicatorOn @88;
+    lkasButtonOff @89;
   }
 }
 
@@ -389,6 +404,11 @@ struct CarParams {
   communityFeature @46: Bool;  # true if a community maintained feature is detected
   fingerprintSource @49: FingerprintSource;
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
+  mdpsBus @51: Int8;
+  sasBus @52: Int8;
+  sccBus @53: Int8;
+  autoLcaEnabled @54: Bool;
+  spasEnabled @55: Bool;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);
